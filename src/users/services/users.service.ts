@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { CreateUserDto } from '../dtos/users.dto';
+import { ChangeUserDto, RegistreUserDto } from '../dtos/users.dto';
 import { Users } from '../entities/users.entity';
 
 import * as bcrypt from 'bcrypt';
@@ -38,7 +38,7 @@ export class UsersService {
   }
 
   // ! REGISTRE
-  async create(data: CreateUserDto) {
+  async create(data: RegistreUserDto) {
     try {
       const temporaryPassword: string = uuidv4().split('-', 1)[0];
       const newUser = this.userRepo.create(data);
@@ -60,7 +60,7 @@ export class UsersService {
   }
 
   // ! CHANGE
-  async change({ email, password }) {
+  async change({ email, password }: ChangeUserDto) {
     const user = await this.findByEmail(email);
     const hashPassword = await bcrypt.hash(password, 10);
     user.password = hashPassword;

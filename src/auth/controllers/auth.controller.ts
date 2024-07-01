@@ -8,7 +8,6 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { generateTokenJWT, PayloadToken } from 'src/common/auth/jwtUtils';
 import { Users } from 'src/users/entities/users.entity';
@@ -17,7 +16,6 @@ import { LoginDto } from '../dtos/auth.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { LoginAuthGuard } from '../guards/login-auth.guard';
 
-@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private usersService: UsersService) {}
@@ -46,12 +44,6 @@ export class AuthController {
   // ! TOKEN
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Token de autorización',
-    required: true,
-  })
   @Get('token')
   async token(@Req() req: Request) {
     const token = req.user as PayloadToken;

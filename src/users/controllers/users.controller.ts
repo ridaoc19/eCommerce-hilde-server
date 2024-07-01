@@ -8,7 +8,7 @@ import {
   InternalServerErrorException,
   Post,
 } from '@nestjs/common';
-import { CreateUserDto } from '../dtos/users.dto';
+import { ChangeUserDto, RegistreUserDto } from '../dtos/users.dto';
 import { UsersService } from '../services/users.service';
 
 @Controller('users')
@@ -18,7 +18,7 @@ export class UsersController {
   // ! REGISTRE
   @Post('registre')
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() payload: CreateUserDto) {
+  async create(@Body() payload: RegistreUserDto) {
     try {
       const response = await this.usersService.create(payload);
 
@@ -41,7 +41,7 @@ export class UsersController {
   // ! CHANGE
   @Post('change')
   @HttpCode(HttpStatus.OK)
-  async change(@Body() payload) {
+  async change(@Body() payload: ChangeUserDto) {
     const user = await this.usersService.change(payload);
     if (user) {
       return {
