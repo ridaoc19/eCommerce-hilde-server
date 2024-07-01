@@ -1,23 +1,24 @@
+import { Exclude } from 'class-transformer';
+import {
+  IsBoolean,
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Length,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import {
   Column,
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  Length,
-  Matches,
-  IsBoolean,
-  IsEnum,
-  IsOptional,
-  MinLength,
-  MaxLength,
-} from 'class-validator';
-import { Exclude } from 'class-transformer';
 
 export enum UserRole {
   Super = 'super',
@@ -27,6 +28,7 @@ export enum UserRole {
 }
 
 @Entity()
+@Unique(['email'])
 export class Users {
   @PrimaryGeneratedColumn('uuid')
   user_id: string;
@@ -54,7 +56,7 @@ export class Users {
   email: string;
 
   @Column({
-    type: 'integer',
+    type: 'bigint',
     comment: 'Número de teléfono del usuario',
   })
   @Matches(/^[0-9]+$/, {

@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Get,
   HttpCode,
@@ -12,7 +11,6 @@ import { Request } from 'express';
 import { generateTokenJWT, PayloadToken } from 'src/common/auth/jwtUtils';
 import { Users } from 'src/users/entities/users.entity';
 import { UsersService } from 'src/users/services/users.service';
-import { LoginDto } from '../dtos/auth.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { LoginAuthGuard } from '../guards/login-auth.guard';
 
@@ -24,8 +22,7 @@ export class AuthController {
   @UseGuards(LoginAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  async login(@Req() req: Request, @Body() payload: LoginDto) {
-    false && payload;
+  async login(@Req() req: Request) {
     const user = generateTokenJWT({
       user: req.user as Users,
       expiresIn: '1d',

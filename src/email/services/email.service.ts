@@ -47,7 +47,7 @@ export class EmailService {
 
     try {
       //TODO TAREA
-      const job = new CronJob('*/2 * * * *', async () => {
+      const job = new CronJob('*/10 * * * *', async () => {
         try {
           this.jobExecutionCounts[type]++;
           const countName = this.jobExecutionCounts[type];

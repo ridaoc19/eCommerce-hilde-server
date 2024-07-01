@@ -1,10 +1,11 @@
+import { Transform } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
+  IsNumber,
   IsString,
   MaxLength,
   MinLength,
-  ValidateIf,
 } from 'class-validator';
 
 export class RegistreUserDto {
@@ -28,6 +29,8 @@ export class RegistreUserDto {
   readonly email: string;
 
   @IsNotEmpty({ message: 'El número de teléfono no puede estar vacío' })
+  @Transform(({ value }) => parseInt(value, 10), { toClassOnly: true })
+  @IsNumber({}, { message: 'El número de teléfono debe ser un número' })
   readonly phone: number;
 }
 
@@ -67,8 +70,14 @@ export class ChangeUserDto {
     message:
       'La repetición de la nueva contraseña debe tener máximo 15 caracteres',
   })
-  @ValidateIf((o) => o.password === o.newPassword, {
-    message: 'Las contraseñas no coinciden',
-  })
   readonly newPassword: string;
+}
+
+export class ResetUserDto {
+  @IsString({
+    message: 'El correo electrónico debe ser una cadena de caracteres',
+  })
+  @IsNotEmpty({ message: 'El correo electrónico no puede estar vacío' })
+  @IsEmail({}, { message: 'El correo electrónico no tiene un formato válido' })
+  readonly email: string;
 }
