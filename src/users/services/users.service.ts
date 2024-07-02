@@ -1,8 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { CreateUserDto } from '../dtos/users.dto';
+import {
+  ChangeUserDto,
+  RegistreUserDto,
+  ResetUserDto,
+} from '../dtos/users.dto';
 import { Users } from '../entities/users.entity';
 
 import * as bcrypt from 'bcrypt';
@@ -38,7 +47,7 @@ export class UsersService {
   }
 
   // ! REGISTRE
-  async create(data: CreateUserDto) {
+  async create(data: RegistreUserDto) {
     try {
       const temporaryPassword: string = uuidv4().split('-', 1)[0];
       const newUser = this.userRepo.create(data);
@@ -55,22 +64,36 @@ export class UsersService {
 
       return userCreate;
     } catch (error) {
-      throw new NotFoundException(error.message);
+      if (error.code === '23505') {
+        throw new ConflictException(
+          `El correo electrónico ${data.email} ya se encuentra registrado`,
+        );
+      }
+      throw new NotFoundException('Error creando el usuario: ' + error.message);
     }
   }
 
   // ! CHANGE
-  async change({ email, password }) {
-    const user = await this.findByEmail(email);
-    const hashPassword = await bcrypt.hash(password, 10);
-    user.password = hashPassword;
-    user.verified = true;
-    const newUser = await this.userRepo.save(user);
-    return newUser;
+  async change({ email, password, newPassword }: ChangeUserDto) {
+    try {
+      const user = await this.findByEmail(email);
+      if (password !== newPassword) {
+        throw new BadRequestException(
+          `${user.name} las contraseñas no coinciden, por favor verificar y realizar el cambio nuevamente`,
+        );
+      }
+      const hashPassword = await bcrypt.hash(password, 10);
+      user.password = hashPassword;
+      user.verified = true;
+      const newUser = await this.userRepo.save(user);
+      return newUser;
+    } catch (error) {
+      throw error;
+    }
   }
 
   // ! RESET
-  async reset({ email }) {
+  async reset({ email }: ResetUserDto) {
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -79,6 +102,12 @@ export class UsersService {
       const user = await queryRunner.manager.findOne(Users, {
         where: { email },
       });
+
+      if (!user) {
+        throw new BadRequestException(
+          `El correo electrónico ${email} no se encuentra registrado`,
+        );
+      }
 
       const temporaryPassword: string = uuidv4().split('-', 1)[0];
       const password = await generateHashPassword(temporaryPassword);
@@ -97,7 +126,7 @@ export class UsersService {
       return newUser;
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw new NotFoundException(error.message);
+      throw error;
     } finally {
       await queryRunner.release();
     }

@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Get,
   HttpCode,
@@ -8,16 +7,13 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { generateTokenJWT, PayloadToken } from 'src/common/auth/jwtUtils';
 import { Users } from 'src/users/entities/users.entity';
 import { UsersService } from 'src/users/services/users.service';
-import { LoginDto } from '../dtos/auth.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { LoginAuthGuard } from '../guards/login-auth.guard';
 
-@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private usersService: UsersService) {}
@@ -26,8 +22,7 @@ export class AuthController {
   @UseGuards(LoginAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  async login(@Req() req: Request, @Body() payload: LoginDto) {
-    false && payload;
+  async login(@Req() req: Request) {
     const user = generateTokenJWT({
       user: req.user as Users,
       expiresIn: '1d',
@@ -46,12 +41,6 @@ export class AuthController {
   // ! TOKEN
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Token de autorización',
-    required: true,
-  })
   @Get('token')
   async token(@Req() req: Request) {
     const token = req.user as PayloadToken;
