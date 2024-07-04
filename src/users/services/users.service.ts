@@ -1,23 +1,15 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import {
-  ChangeUserDto,
-  RegistreUserDto,
-  ResetUserDto,
-} from '../dtos/users.dto';
+import { AccountUpdate, ChangeUserDto, RegistreUserDto, ResetUserDto } from '../dtos/users.dto';
 import { Users } from '../entities/users.entity';
 
 import * as bcrypt from 'bcrypt';
 import { generateHashPassword } from 'src/common/auth/bcryptUtils';
 import { AddCronJob, EmailService } from 'src/email/services/email.service';
 import { v4 as uuidv4 } from 'uuid';
+import { generateTokenEmail } from 'src/common/auth/jwtUtils';
 
 @Injectable()
 export class UsersService {
@@ -57,17 +49,16 @@ export class UsersService {
       const userCreate = await this.userRepo.save(newUser);
 
       this.emailServices.addCronJob({
-        type: AddCronJob.Registre,
         passwordTemporality: temporaryPassword,
+        user_id: userCreate.user_id,
+        type: AddCronJob.Registre,
         email: userCreate.email,
       });
 
       return userCreate;
     } catch (error) {
       if (error.code === '23505') {
-        throw new ConflictException(
-          `El correo electrónico ${data.email} ya se encuentra registrado`,
-        );
+        throw new ConflictException(`El correo electrónico ${data.email} ya se encuentra registrado`);
       }
       throw new NotFoundException('Error creando el usuario: ' + error.message);
     }
@@ -104,9 +95,7 @@ export class UsersService {
       });
 
       if (!user) {
-        throw new BadRequestException(
-          `El correo electrónico ${email} no se encuentra registrado`,
-        );
+        throw new BadRequestException(`El correo electrónico ${email} no se encuentra registrado`);
       }
 
       const temporaryPassword: string = uuidv4().split('-', 1)[0];
@@ -117,9 +106,10 @@ export class UsersService {
       const newUser = await queryRunner.manager.save(user);
 
       await this.emailServices.addCronJob({
+        passwordTemporality: temporaryPassword,
+        user_id: newUser.user_id,
         type: AddCronJob.Reset,
         email: newUser.email,
-        passwordTemporality: temporaryPassword,
       });
 
       await queryRunner.commitTransaction();
@@ -129,6 +119,35 @@ export class UsersService {
       throw error;
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  // ! ACCOUNT UPDATE
+  async accountUpdate({ user_id, email, lastName, name, phone, newEmail }: AccountUpdate) {
+    try {
+      let verifiedEmailUpdate: boolean = true;
+
+      if (newEmail !== email) {
+        verifiedEmailUpdate = false;
+        const token = generateTokenEmail({ user_id, email: newEmail });
+        this.emailServices.addCronJob({
+          type: AddCronJob.ValidateEmail,
+          tokenJWT: token,
+          email: newEmail,
+          user_id,
+        });
+      }
+
+      const userUpdate = await this.findOne(user_id);
+      userUpdate.name = name;
+      userUpdate.lastName = lastName;
+      userUpdate.phone = phone;
+      userUpdate.verifiedEmail = verifiedEmailUpdate;
+      await this.userRepo.save(userUpdate);
+
+      return userUpdate;
+    } catch (error) {
+      throw error;
     }
   }
 
