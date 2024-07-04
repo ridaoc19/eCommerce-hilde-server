@@ -1,10 +1,13 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import {
-  ChangeUserDto,
-  RegistreUserDto,
-  ResetUserDto,
-} from '../dtos/users.dto';
+import { AccountUpdate, ChangeUserDto, RegistreUserDto, ResetUserDto } from '../dtos/users.dto';
+import { Users } from '../entities/users.entity';
 import { UsersService } from '../services/users.service';
+
+export interface ResponseUser {
+  statusCode: HttpStatus;
+  message: string;
+  data: Users;
+}
 
 @Controller('users')
 export class UsersController {
@@ -13,7 +16,7 @@ export class UsersController {
   // ! REGISTRE
   @Post('registre')
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() payload: RegistreUserDto) {
+  async create(@Body() payload: RegistreUserDto): Promise<Omit<ResponseUser, 'data'>> {
     const user = await this.usersService.create(payload);
 
     return {
@@ -25,7 +28,7 @@ export class UsersController {
   // ! CHANGE
   @Post('change')
   @HttpCode(HttpStatus.OK)
-  async change(@Body() payload: ChangeUserDto) {
+  async change(@Body() payload: ChangeUserDto): Promise<Omit<ResponseUser, 'data'>> {
     const user = await this.usersService.change(payload);
     return {
       statusCode: HttpStatus.OK,
@@ -36,11 +39,23 @@ export class UsersController {
   // ! RESET
   @Post('reset')
   @HttpCode(HttpStatus.OK)
-  async reset(@Body() payload: ResetUserDto) {
+  async reset(@Body() payload: ResetUserDto): Promise<Omit<ResponseUser, 'data'>> {
     const user = await this.usersService.reset(payload);
     return {
       statusCode: HttpStatus.OK,
       message: `¡Restablecimiento exitoso! \n\n ${user.name}, revisa tu bandeja de entrada de correo electrónico ${user.email}. Pronto recibirás una contraseña temporal.`,
+    };
+  }
+
+  // ! ACCOUNT UPDATE
+  @Post('account-update')
+  @HttpCode(HttpStatus.OK)
+  async accountUpdate(@Body() payload: AccountUpdate): Promise<ResponseUser> {
+    const user = await this.usersService.accountUpdate(payload);
+    return {
+      statusCode: HttpStatus.OK,
+      message: `¡Información actualizada con éxito! \n\n ${user.name}, tus datos han sido actualizados.`,
+      data: user,
     };
   }
 }

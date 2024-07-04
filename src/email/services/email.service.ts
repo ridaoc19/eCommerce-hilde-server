@@ -16,18 +16,21 @@ export enum AddCronJob {
 export type AddCronJobMap = {
   [AddCronJob.Registre]: {
     type: AddCronJob.Registre;
-    passwordTemporality: string;
+    user_id: string;
     email: string;
+    passwordTemporality: string;
   };
   [AddCronJob.Reset]: {
     type: AddCronJob.Reset;
+    user_id: string;
     email: string;
     passwordTemporality: string;
   };
   [AddCronJob.ValidateEmail]: {
     type: AddCronJob.ValidateEmail;
-    tokenJWT: string;
+    user_id: string;
     email: string;
+    tokenJWT: string;
   };
 };
 
@@ -41,21 +44,19 @@ export class EmailService {
 
   //!
   async addCronJob<T extends AddCronJob>(data: AddCronJobMap[T]) {
-    const { email, type } = data;
+    const { email, type, user_id } = data;
     const capitalizedNewName = capitalizeFirstLetter(type);
     this.jobExecutionCounts[type] = 0;
 
     try {
       //TODO TAREA
-      const job = new CronJob('*/10 * * * *', async () => {
+      const job = new CronJob('*/1 * * * *', async () => {
         try {
           this.jobExecutionCounts[type]++;
           const countName = this.jobExecutionCounts[type];
-          const totalTypeTemplate = Object.values(TypeTemplateRegistre).filter(
-            (e) => e.includes(type),
-          ).length;
+          const totalTypeTemplate = Object.values(TypeTemplateRegistre).filter((e) => e.includes(type)).length;
 
-          const user = await this.userRepo.findOne({ where: { email } });
+          const user = await this.userRepo.findOne({ where: { user_id } });
 
           if (
             (type === AddCronJob.Registre && user.verified) ||
@@ -69,23 +70,21 @@ export class EmailService {
 
           // ? EMAIL
           await sendEmail({
-            email: user.email,
+            email,
             name: user.name,
-            tokenJWT:
-              data.type === AddCronJob.ValidateEmail ? data.tokenJWT : '',
-            password:
-              data.type !== AddCronJob.ValidateEmail
-                ? data.passwordTemporality
-                : '',
-            type: TypeTemplateRegistre[
-              `${capitalizedNewName}_${this.jobExecutionCounts[type]}`
-            ],
+            tokenJWT: data.type === AddCronJob.ValidateEmail ? data.tokenJWT : '',
+            password: data.type !== AddCronJob.ValidateEmail ? data.passwordTemporality : '',
+            type: TypeTemplateRegistre[`${capitalizedNewName}_${this.jobExecutionCounts[type]}`],
           });
 
           // * si no realizan validaciones cancela y si es reset elimina
           if (countName === totalTypeTemplate - 1) {
             if (type === 'registre') {
               await this.userRepo.remove(user);
+            }
+            if (type === AddCronJob.ValidateEmail) {
+              user.verifiedEmail = true;
+              await this.userRepo.save(user);
             }
             delete this.jobExecutionCounts[type];
             this.schedulerRegistry.deleteCronJob(type);
@@ -104,20 +103,15 @@ export class EmailService {
       this.schedulerRegistry.addCronJob(type, job);
       job.start();
 
-      const user = await this.userRepo.findOne({ where: { email } });
+      const user = await this.userRepo.findOne({ where: { user_id } });
 
       // ? EMAIL
       await sendEmail({
-        email: user.email,
+        email,
         name: user.name,
         tokenJWT: data.type === AddCronJob.ValidateEmail ? data.tokenJWT : '',
-        password:
-          data.type !== AddCronJob.ValidateEmail
-            ? data.passwordTemporality
-            : '',
-        type: TypeTemplateRegistre[
-          `${capitalizedNewName}_${this.jobExecutionCounts[type]}`
-        ],
+        password: data.type !== AddCronJob.ValidateEmail ? data.passwordTemporality : '',
+        type: TypeTemplateRegistre[`${capitalizedNewName}_${this.jobExecutionCounts[type]}`],
       });
     } catch (error) {
       delete this.jobExecutionCounts[type];
