@@ -19,9 +19,7 @@ export class AuthService {
     }
     const isMatch = await comparePassword(password, user.password);
     if (!isMatch) {
-      throw new UnauthorizedException(
-        `Lo sentimos, la contraseña no es válida.`,
-      );
+      throw new UnauthorizedException(`Lo sentimos, la contraseña no es válida.`);
     }
     if (user && isMatch) {
       return user;

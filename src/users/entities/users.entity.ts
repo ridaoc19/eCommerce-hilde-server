@@ -11,14 +11,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  Unique,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 
 export enum UserRole {
   Super = 'super',
@@ -96,8 +89,7 @@ export class Users {
     comment: 'Rol del usuario en el sistema',
   })
   @IsEnum(UserRole, {
-    message:
-      'El rol debe ser uno de los siguientes: super, admin, edit, visitant',
+    message: 'El rol debe ser uno de los siguientes: super, admin, edit, visitant',
   })
   roles: UserRole;
 
