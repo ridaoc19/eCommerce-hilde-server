@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ExecutionContext,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
@@ -22,9 +18,7 @@ export class LoginAuthGuard extends AuthGuard('login') {
     const loginDto = plainToClass(LoginDto, body);
     const validationErrors = await validate(loginDto);
     if (validationErrors.length > 0) {
-      const errorMessages = validationErrors.flatMap((error) =>
-        Object.values(error.constraints),
-      );
+      const errorMessages = validationErrors.flatMap((error) => Object.values(error.constraints));
       throw new BadRequestException(errorMessages);
     }
 

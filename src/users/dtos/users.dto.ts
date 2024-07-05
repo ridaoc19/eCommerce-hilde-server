@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsNumber, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsString, MaxLength, MinLength } from 'class-validator';
+import { UserRole } from '../entities/users.entity';
 
 export class RegistreUserDto {
   @IsString({ message: 'El nombre debe ser una cadena de caracteres' })
@@ -71,7 +72,7 @@ export class ResetUserDto {
   readonly email: string;
 }
 
-export class AccountUpdate {
+export class AccountUpdateDto {
   @IsString({ message: 'El ID del usuario debe ser una cadena de caracteres' })
   @IsNotEmpty({ message: 'El ID del usuario no puede estar vacío' })
   readonly user_id: string;
@@ -106,4 +107,35 @@ export class AccountUpdate {
   @Transform(({ value }) => parseInt(value, 10), { toClassOnly: true })
   @IsNumber({}, { message: 'El número de teléfono debe ser un número' })
   readonly phone: number;
+}
+
+export class VerifyDto {
+  @IsString({
+    message: 'El token debe ser una cadena de caracteres',
+  })
+  @IsNotEmpty({ message: 'El token no puede estar vacía' })
+  readonly token: string;
+}
+
+export class AccountRoleDto {
+  @IsString({ message: 'El ID del usuario debe ser una cadena de caracteres' })
+  @IsNotEmpty({ message: 'El ID del usuario no puede estar vacío' })
+  readonly user_id: string;
+
+  @IsEnum(UserRole, {
+    message: 'El rol debe ser uno de los siguientes: super, admin, edit, visitant',
+  })
+  readonly role: UserRole;
+}
+
+export class AccountSearchDto {
+  @IsString()
+  @IsNotEmpty()
+  readonly search: string;
+}
+
+export class DeleteDto {
+  @IsString({ message: 'El ID del usuario debe ser una cadena de caracteres' })
+  @IsNotEmpty({ message: 'El ID del usuario no puede estar vacío' })
+  readonly user_id: string;
 }
