@@ -4,10 +4,10 @@ import * as Joi from 'joi';
 
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
+import { DatabaseModule } from './common/database/database.module';
+import { EmailModule } from './common/email/email.module';
 import config, { environments } from './config';
-import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
-import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
