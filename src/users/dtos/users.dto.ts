@@ -133,3 +133,9 @@ export class AccountSearchDto {
   @IsNotEmpty()
   readonly search: string;
 }
+
+export class DeleteDto {
+  @IsString({ message: 'El ID del usuario debe ser una cadena de caracteres' })
+  @IsNotEmpty({ message: 'El ID del usuario no puede estar vacío' })
+  readonly user_id: string;
+}

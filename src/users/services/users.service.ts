@@ -7,6 +7,7 @@ import {
   AccountSearchDto,
   AccountUpdateDto,
   ChangeUserDto,
+  DeleteDto,
   RegistreUserDto,
   ResetUserDto,
   VerifyDto,
@@ -212,7 +213,13 @@ export class UsersService {
   }
 
   // ! DELETE
-  remove(user_id: number) {
-    return this.userRepo.delete(user_id);
+  async remove({ user_id }: DeleteDto) {
+    const user = await this.userRepo.findOne({ where: { user_id } });
+    if (!user) {
+      throw new NotFoundException(`Usuario con ID ${user_id} no encontrado.`);
+    }
+
+    await this.userRepo.delete(user_id);
+    return user;
   }
 }

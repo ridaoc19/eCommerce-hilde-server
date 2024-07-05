@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import {
   AccountRoleDto,
   AccountSearchDto,
@@ -116,6 +116,18 @@ export class UsersController {
       statusCode: HttpStatus.OK,
       message: `¡Validación de correo exitosa! \n\n ${user.name}, la validación de correo fue exitosa, desde este momento podrás iniciar sesión con el correo ${user.email}.`,
       data: user,
+    };
+  }
+
+  // ! DELETE
+  // @UseGuards(JwtAuthGuard)
+  @Get(':user_id')
+  @HttpCode(HttpStatus.OK)
+  async delete(@Param('user_id') user_id: string): Promise<Omit<ResponseUser, 'data'>> {
+    const user = await this.usersService.remove({ user_id });
+    return {
+      statusCode: HttpStatus.OK,
+      message: `Se elimino el usuario \n\nNombres: ${user.name} \nApellidos: ${user.lastName} \nCorreo: ${user.email}`,
     };
   }
 }
