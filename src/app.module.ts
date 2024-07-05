@@ -8,6 +8,7 @@ import { DatabaseModule } from './common/database/database.module';
 import { EmailModule } from './common/email/email.module';
 import config, { environments } from './config';
 import { UsersModule } from './users/users.module';
+import { ProductModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -32,10 +33,11 @@ import { UsersModule } from './users/users.module';
         API_KEY: Joi.string().required(),
       }),
     }),
-    UsersModule,
     DatabaseModule,
-    AuthModule,
     EmailModule,
+    AuthModule,
+    UsersModule,
+    ProductModule,
   ],
   controllers: [],
   providers: [],

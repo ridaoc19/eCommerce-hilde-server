@@ -11,7 +11,17 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import ProductEntity from 'src/products/entities/product.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+  Unique,
+  UpdateDateColumn,
+} from 'typeorm';
 
 export enum UserRole {
   Super = 'super',
@@ -101,6 +111,20 @@ export class Users {
   @IsOptional()
   @IsString({ message: 'Las direcciones deben ser una cadena de texto' })
   addresses: string;
+
+  @ManyToMany(() => ProductEntity, (product) => product.favorites)
+  @JoinTable({
+    name: 'favorites',
+    joinColumn: {
+      name: 'user',
+      referencedColumnName: 'user_id',
+    },
+    inverseJoinColumn: {
+      name: 'product',
+      referencedColumnName: 'product_id',
+    },
+  })
+  favorite: ProductEntity[];
 
   @CreateDateColumn({
     type: 'timestamptz',
