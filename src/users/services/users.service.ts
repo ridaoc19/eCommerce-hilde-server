@@ -17,7 +17,7 @@ import { Users } from '../entities/users.entity';
 import * as bcrypt from 'bcrypt';
 import { generateHashPassword } from 'src/common/auth/bcryptUtils';
 import { generateTokenEmail, verifyTokenEmail } from 'src/common/auth/jwtUtils';
-import { AddCronJob, EmailService } from 'src/email/services/email.service';
+import { AddCronJob, EmailService } from 'src/common/email/services/email.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
