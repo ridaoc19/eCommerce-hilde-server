@@ -4,7 +4,7 @@ import { CategoryController } from './controllers/category.controller';
 import { DepartmentController } from './controllers/department.controller';
 import { ProductController } from './controllers/product.controller';
 import { SubcategoryController } from './controllers/subcategory.controller';
-import { VariantController } from './controllers/variant.controller copy';
+import { VariantController } from './controllers/variant.controller';
 import CategoryEntity from './entities/category.entity';
 import DepartmentEntity from './entities/department.entity';
 import ProductEntity from './entities/product.entity';
